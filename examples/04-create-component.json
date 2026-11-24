@@ -1,0 +1,5 @@
+{
+  "operations": [
+    { "type": "createComponent", "nodeId": "123:456", "name": "Bouton / Primaire" }
+  ]
+}

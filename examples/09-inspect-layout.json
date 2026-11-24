@@ -1,0 +1,5 @@
+{
+  "operations": [
+    { "type": "getNodes", "nodeIds": ["123:456"], "details": ["structure", "geometry", "layout", "appearance"] }
+  ]
+}

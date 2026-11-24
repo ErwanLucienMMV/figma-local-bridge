@@ -1,0 +1,6 @@
+{
+  "operations": [
+    { "type": "setFill", "nodeId": "123:456", "color": "#2563EB", "opacity": 1 },
+    { "type": "setPosition", "nodeId": "123:456", "x": 240, "y": 120 }
+  ]
+}

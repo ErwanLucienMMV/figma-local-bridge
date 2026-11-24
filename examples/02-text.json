@@ -1,0 +1,5 @@
+{
+  "operations": [
+    { "type": "setText", "nodeId": "123:456", "text": "Bonjour depuis Codex local" }
+  ]
+}

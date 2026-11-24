@@ -1,0 +1,19 @@
+{
+  "name": "figma-local-bridge",
+  "version": "1.1.1",
+  "private": true,
+  "description": "Plugin Figma Desktop et pont local à commandes déclaratives",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "build": "node scripts/build.mjs",
+    "start": "node bridge/server.mjs",
+    "client": "node client/cli.mjs",
+    "test": "node --test test/protocol.test.mjs test/bridge.test.mjs test/engine.test.mjs test/extensions.test.mjs test/runtime.test.mjs",
+    "check": "node scripts/build.mjs --check",
+    "configure": "node scripts/set-plugin-id.mjs"
+  },
+  "license": "MIT"
+}

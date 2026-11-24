@@ -1,0 +1,9 @@
+{
+  "operations": [
+    {
+      "type": "createText", "parentId": "123:456", "name": "UML — texte temporaire",
+      "text": "Emplacement réservé au futur diagramme UML de ft_transcendance. Aucun diagramme n’est encore fourni.",
+      "width": 400, "typographySourceId": "123:789", "textAutoResize": "HEIGHT"
+    }
+  ]
+}

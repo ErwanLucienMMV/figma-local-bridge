@@ -1,0 +1,8 @@
+{
+  "operations": [
+    {
+      "type": "copyAppearance", "sourceId": "123:456", "targetId": "123:789",
+      "properties": ["fills", "strokes", "corners", "effects", "opacity"]
+    }
+  ]
+}

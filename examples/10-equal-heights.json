@@ -1,0 +1,8 @@
+{
+  "operations": [
+    { "type": "setLayout", "nodeId": "123:456", "layout": { "layoutSizingVertical": "FIXED" } },
+    { "type": "setLayout", "nodeId": "123:789", "layout": { "layoutSizingVertical": "FIXED" } },
+    { "type": "resizeNode", "nodeId": "123:456", "height": 320 },
+    { "type": "resizeNode", "nodeId": "123:789", "height": 320 }
+  ]
+}

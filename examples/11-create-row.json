@@ -1,0 +1,12 @@
+{
+  "operations": [
+    {
+      "type": "createFrame", "parentId": "123:456", "name": "Étude de cas — UML et retour personnel",
+      "width": 900, "height": 240,
+      "layout": {
+        "layoutMode": "HORIZONTAL", "layoutSizingHorizontal": "FILL", "layoutSizingVertical": "HUG",
+        "primaryAxisAlignItems": "MIN", "counterAxisAlignItems": "MIN", "itemSpacing": 24
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "operations": [
+    {
+      "type": "setInstanceProperties", "nodeId": "123:999",
+      "properties": { "Label#1:0": "Continuer", "Visible#2:0": true, "State": "Default" }
+    }
+  ]
+}

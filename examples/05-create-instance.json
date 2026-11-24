@@ -1,0 +1,5 @@
+{
+  "operations": [
+    { "type": "createInstance", "componentId": "123:789", "x": 480, "y": 120, "name": "Bouton / Instance" }
+  ]
+}

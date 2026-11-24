@@ -1,0 +1,38 @@
+# Runtime bridge credentials and local state
+.local/
+
+# Environment secrets (keep only deliberately sanitized example templates)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Common credential files and private keys
+credentials.json
+credentials.*.json
+secrets.json
+secrets.*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+
+# Personal workflows, design commands, captures, and exports
+/docs/PORTFOLIO.md
+/commands/
+/private/
+/screenshots/
+/recordings/
+/exports/
+/logs/
+
+# Dependencies, logs, and local temporary files
+node_modules/
+*.log
+npm-debug.log*
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db

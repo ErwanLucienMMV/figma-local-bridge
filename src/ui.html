@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:18px;background:var(--figma-color-bg,#fff);color:var(--figma-color-text,#202124);font:12px/1.5 Inter,system-ui,sans-serif}h1{font-size:18px;margin:0 0 5px}h2{font-size:13px;margin:18px 0 7px}p{margin:6px 0 12px}.muted{color:var(--figma-color-text-secondary,#626872)}label{display:block;margin-bottom:5px}input{width:100%;padding:9px;border:1px solid #aeb4bc;border-radius:6px;background:var(--figma-color-bg);color:inherit}button{border:0;border-radius:6px;padding:9px 12px;background:#e8ebef;color:#1c2534;font:inherit;cursor:pointer}button.primary{background:#1264df;color:white}button.danger{background:#ffe1df;color:#8a1610}button:disabled{opacity:.45;cursor:default}.row{display:flex;gap:8px;margin-top:9px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--figma-color-bg-secondary,#f3f5f8);padding:10px;border-radius:6px;max-height:155px;overflow:auto;margin:6px 0}#status{padding:9px;border:1px solid #aeb4bc;border-radius:6px;margin:13px 0}#review[hidden]{display:none}#review{border:1px solid #1264df;padding:10px;border-radius:6px}#log{max-height:100px}small{display:block;margin-top:6px}button:focus-visible,input:focus-visible{outline:2px solid #1264df;outline-offset:2px}
+</style>
+</head>
+<body>
+<h1>Codex Local Bridge</h1>
+<p class="muted">Interface 1.1.1 · connexion locale · page courante uniquement</p>
+<label for="token">Clé plugin affichée par le pont</label>
+<input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="64 caractères hexadécimaux">
+<div class="row"><button class="primary" id="connect">Connecter</button><button id="disconnect">Déconnecter</button></div>
+<div id="status" role="status" aria-live="polite">Déconnecté</div>
+<label style="display:flex;align-items:center;gap:8px"><input id="autoApply" type="checkbox" checked style="width:auto">Appliquer automatiquement les modifications</label>
+<small id="modeStatus" role="status">Mode automatique : les prochaines commandes seront appliquées dès réception.</small>
+<small class="muted">Décochez pour valider les prochaines commandes avant application. Un lot déjà démarré continue ; un lot déjà en attente reste à valider. Pour revenir sur une modification, utilisez Annuler dans Figma.</small>
+<section id="review" hidden>
+<strong>Modification à vérifier</strong>
+<small>Vérifiez les cibles, créations, textes, dimensions et réglages prévus. Le remplissage remplace tous les remplissages existants. Un lot peut réussir partiellement.</small>
+<pre id="command"></pre>
+<small id="deadline"></small>
+<div class="row"><button class="primary" id="apply">Appliquer</button><button class="danger" id="reject">Refuser</button></div>
+</section>
+<h2>Page et sélection</h2>
+<button id="refresh">Actualiser les identifiants</button>
+<pre id="selection">Chargement…</pre>
+<small class="muted">Les lectures de sélection/nœuds demandées par l’agent sont automatiques une fois connecté. Les textes sélectionnés peuvent lui être transmis.</small>
+<h2>Derniers résultats</h2><pre id="log" aria-live="polite">Aucune commande.</pre>
+<details><summary>Dernière modification reçue</summary><pre id="lastCommand">Aucune modification.</pre></details>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const send = data => parent.postMessage({ pluginMessage: data }, '*');
+let pendingId = null;
+let connected = false;
+const history = [];
+$('autoApply').checked = true;
+$('autoApply').onchange = () => send({ type: 'setAutoApply', enabled: $('autoApply').checked });
+function clearReview() { pendingId = null; $('review').hidden = true; $('apply').disabled = false; $('reject').disabled = false; }
+$('connect').onclick = () => {
+  const token = $('token').value.trim(); $('token').value = '';
+  $('connect').disabled = true;
+  send({ type: 'connect', token });
+};
+$('disconnect').onclick = () => send({ type: 'disconnect' });
+$('refresh').onclick = () => send({ type: 'selection' });
+for (const type of ['apply', 'reject']) $(type).onclick = () => {
+  if (!pendingId) return;
+  $('apply').disabled = true; $('reject').disabled = true;
+  send({ type, commandId: pendingId });
+};
+window.onmessage = event => {
+  // Desktop embeds the UI in several sandbox frames. Figma's reply can come
+  // from an ancestor above the immediate parent (observed: parent.parent.parent).
+  // Accept only a host ancestor with a known Figma/opaque origin, never siblings.
+  if (!['https://www.figma.com', 'https://figma.com', 'null'].includes(event.origin)) return;
+  let host = window;
+  let fromHost = false;
+  for (let depth = 0; depth < 8; depth++) {
+    try {
+      const ancestor = host.parent;
+      if (!ancestor || ancestor === host) break;
+      if (event.source === ancestor) { fromHost = true; break; }
+      host = ancestor;
+    } catch (_) { break; }
+  }
+  if (!fromHost || !event.data || typeof event.data.pluginMessage !== 'object' || !event.data.pluginMessage) return;
+  const m = event.data.pluginMessage;
+  switch (m.type) {
+    case 'selection': $('selection').textContent = JSON.stringify({ pageId: m.pageId, pageName: m.pageName, nodes: m.nodes, truncated: m.truncated }, null, 2); break;
+    case 'mode': $('autoApply').checked = m.autoApply === true; $('modeStatus').textContent = m.autoApply ? 'Mode automatique : les prochaines commandes seront appliquées dès réception.' : 'Mode manuel : chaque nouvelle modification attend votre validation.'; break;
+    case 'connected': connected = true; $('status').textContent = 'Connecté · page ' + m.pageId + '\nSession : ' + m.sessionId; $('connect').disabled = true; break;
+    case 'disconnected': connected = false; clearReview(); $('status').textContent = m.message; $('connect').disabled = false; break;
+    case 'pending': pendingId = m.command.commandId; $('review').hidden = false; $('command').textContent = JSON.stringify(m.command, null, 2); $('lastCommand').textContent = $('command').textContent; $('deadline').textContent = 'À valider avant ' + new Date(m.deadline).toLocaleTimeString(); break;
+    case 'executing': clearReview(); $('lastCommand').textContent = JSON.stringify(m.command, null, 2); $('status').textContent = m.automatic ? 'Application automatique en cours…' : 'Application en cours…'; break;
+    case 'result': clearReview(); $('status').textContent = m.result.status === 'succeeded' ? 'Commande terminée · connecté' : 'Commande ' + m.result.status + ' · consulter le résultat'; history.unshift(JSON.stringify({ commandId: m.commandId, ...m.result }, null, 2)); history.length = Math.min(history.length, 10); $('log').textContent = history.join('\n\n'); break;
+    case 'warning': $('status').textContent = m.message; $('connect').disabled = connected; break;
+  }
+};
+send({ type: 'ready' });
+</script>
+</body>
+</html>
